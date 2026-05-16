@@ -1,16 +1,78 @@
 <!DOCTYPE html>
-<html>
-<head lang="uk">
+<html lang="uk">
+<head>
     <meta charset="UTF-8">
-    <title>My Page</title>
-
-
-    <link rel="stylesheet" type="text/css" href="main.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BuyList - Кошик покупок</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-	<span class="product-item">
-		Apple
-		<span class="amount">4</span>
-	</span>
+
+    <header>
+        <h1 class="hidden-title">BuyList - Кошик покупок</h1>
+    </header>
+
+    <div class="container">
+        <main class="main-panel">
+            <div class="add-item-row">
+                <input type="text" placeholder="Назва товару" aria-label="Введіть назву товару">
+                <button class="btn-add" data-tooltip="Додати новий товар до списку">Додати</button>
+            </div>
+
+            <div class="item-row">
+                <span class="item-name">Помідори</span>
+                <div class="controls">
+                    <button class="btn-circle btn-minus" data-tooltip="Зменшити кількість" aria-label="Зменшити">-</button>
+                    <span class="count-badge">2</span>
+                    <button class="btn-circle btn-plus" data-tooltip="Збільшити кількість" aria-label="Збільшити">+</button>
+                    <button class="btn-status" data-tooltip="Позначити як куплене">Не куплено</button>
+                    <button class="btn-delete" data-tooltip="Видалити товар" aria-label="Видалити">✖</button>
+                </div>
+            </div>
+
+            <div class="item-row">
+                <span class="item-name strike-text">Печиво</span>
+                <div class="controls">
+                    <button class="btn-circle btn-minus" data-tooltip="Зменшити кількість" aria-label="Зменшити">-</button>
+                    <span class="count-badge">2</span>
+                    <button class="btn-circle btn-plus" data-tooltip="Збільшити кількість" aria-label="Збільшити">+</button>
+                    <button class="btn-status" data-tooltip="Скасувати купівлю">Куплено</button>
+                    <button class="btn-delete" data-tooltip="Видалити товар" aria-label="Видалити">✖</button>
+                </div>
+            </div>
+
+            <div class="item-row">
+                <span class="item-name strike-text">Монстр білий</span>
+                <div class="controls">
+                    <button class="btn-circle btn-minus" data-tooltip="Зменшити кількість" aria-label="Зменшити">-</button>
+                    <span class="count-badge">1</span>
+                    <button class="btn-circle btn-plus" data-tooltip="Збільшити кількість" aria-label="Збільшити">+</button>
+                    <button class="btn-status" data-tooltip="Скасувати купівлю">Куплено</button>
+                    <button class="btn-delete" data-tooltip="Видалити товар" aria-label="Видалити">✖</button>
+                </div>
+            </div>
+        </main>
+
+        <aside class="side-panel">
+            <h2>Залишилося</h2>
+            <div class="side-item border-bot">
+                <span class="count-badge">Помідори <span class="orange-circle">2</span></span>
+            </div>
+            
+            <h2>Куплено</h2>
+            <div class="side-item">
+                <span class="count-badge strike-text">Печиво <span class="orange-circle">2</span></span>
+            </div>
+            <div class="side-item">
+                <span class="count-badge strike-text">Монстр енергетик <span class="orange-circle">1</span></span>
+            </div>
+        </aside>
+    </div>
+
+    <footer class="student-badge">
+        <span class="badge-title">BuyList</span>
+        <span class="badge-author">Робота студента: Мартинюк Ілля</span>
+    </footer>
+
 </body>
 </html>
