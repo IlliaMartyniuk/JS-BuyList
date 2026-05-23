@@ -18,54 +18,9 @@
                 <input type="text" placeholder="Назва товару" aria-label="Введіть назву товару">
                 <button class="btn-add" data-tooltip="Додати новий товар до списку">Додати</button>
             </div>
-
-            <div class="item-row">
-                <span class="item-name">Помідори</span>
-                <div class="controls">
-                    <button class="btn-circle btn-minus" data-tooltip="Зменшити кількість" aria-label="Зменшити">-</button>
-                    <span class="count-badge">2</span>
-                    <button class="btn-circle btn-plus" data-tooltip="Збільшити кількість" aria-label="Збільшити">+</button>
-                    <button class="btn-status" data-tooltip="Позначити як куплене">Не куплено</button>
-                    <button class="btn-delete" data-tooltip="Видалити товар" aria-label="Видалити">✖</button>
-                </div>
-            </div>
-
-            <div class="item-row">
-                <span class="item-name strike-text">Печиво</span>
-                <div class="controls">
-                    <button class="btn-circle btn-minus" data-tooltip="Зменшити кількість" aria-label="Зменшити">-</button>
-                    <span class="count-badge">2</span>
-                    <button class="btn-circle btn-plus" data-tooltip="Збільшити кількість" aria-label="Збільшити">+</button>
-                    <button class="btn-status" data-tooltip="Скасувати купівлю">Куплено</button>
-                    <button class="btn-delete" data-tooltip="Видалити товар" aria-label="Видалити">✖</button>
-                </div>
-            </div>
-
-            <div class="item-row">
-                <span class="item-name strike-text">Монстр білий</span>
-                <div class="controls">
-                    <button class="btn-circle btn-minus" data-tooltip="Зменшити кількість" aria-label="Зменшити">-</button>
-                    <span class="count-badge">1</span>
-                    <button class="btn-circle btn-plus" data-tooltip="Збільшити кількість" aria-label="Збільшити">+</button>
-                    <button class="btn-status" data-tooltip="Скасувати купівлю">Куплено</button>
-                    <button class="btn-delete" data-tooltip="Видалити товар" aria-label="Видалити">✖</button>
-                </div>
-            </div>
         </main>
 
         <aside class="side-panel">
-            <h2>Залишилося</h2>
-            <div class="side-item border-bot">
-                <span class="count-badge">Помідори <span class="orange-circle">2</span></span>
-            </div>
-            
-            <h2>Куплено</h2>
-            <div class="side-item">
-                <span class="count-badge strike-text">Печиво <span class="orange-circle">2</span></span>
-            </div>
-            <div class="side-item">
-                <span class="count-badge strike-text">Монстр енергетик <span class="orange-circle">1</span></span>
-            </div>
         </aside>
     </div>
 
@@ -74,5 +29,237 @@
         <span class="badge-author">Робота студента: Мартинюк Ілля</span>
     </footer>
 
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const LOCAL_STORAGE_KEY = 'buyListState';
+
+            const defaultItems = [
+                { id: 1, name: "Помідори", count: 2, isBought: false },
+                { id: 2, name: "Печиво", count: 2, isBought: true },
+                { id: 3, name: "Монстр білий", count: 1, isBought: true }
+            ];
+
+            let items = [];
+
+            function init() {
+                const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
+                if (stored) {
+                    try {
+                        items = JSON.parse(stored);
+                    } catch (e) {
+                        items = [...defaultItems];
+                    }
+                } else {
+                    items = [...defaultItems];
+                }
+                
+                setupEventListeners();
+                render();
+            }
+
+            function setupEventListeners() {
+                const addBtn = document.querySelector('.btn-add');
+                const inputField = document.querySelector('.add-item-row input');
+
+                const addNewItem = () => {
+                    const val = inputField.value.trim();
+                    if (val) {
+                        items.push({
+                            id: Date.now(),
+                            name: val,
+                            count: 1,
+                            isBought: false
+                        });
+                        inputField.value = '';
+                        inputField.focus();
+                        saveAndRender();
+                    }
+                };
+
+                addBtn.addEventListener('click', addNewItem);
+                inputField.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') addNewItem();
+                });
+            }
+
+            function saveAndRender() {
+                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(items));
+                render();
+            }
+
+            function render() {
+                renderMainList();
+                renderSidePanel();
+            }
+
+            function renderMainList() {
+                const mainPanel = document.querySelector('.main-panel');
+                mainPanel.querySelectorAll('.item-row').forEach(row => row.remove());
+
+                items.forEach(item => {
+                    const row = document.createElement('div');
+                    row.className = 'item-row';
+
+                    const nameSpan = document.createElement('span');
+                    nameSpan.className = `item-name ${item.isBought ? 'strike-text' : ''}`;
+                    nameSpan.textContent = item.name;
+
+                    if (!item.isBought) {
+                        nameSpan.style.cursor = 'pointer';
+                        nameSpan.title = 'Натисніть, щоб редагувати';
+                        nameSpan.addEventListener('click', () => editItemName(item.id, nameSpan));
+                    }
+
+                    const controls = document.createElement('div');
+                    controls.className = 'controls';
+
+                    if (!item.isBought) {
+                        const btnMinus = document.createElement('button');
+                        btnMinus.className = 'btn-circle btn-minus';
+                        btnMinus.dataset.tooltip = 'Зменшити кількість';
+                        btnMinus.textContent = '-';
+                        
+                        if (item.count <= 1) {
+                            btnMinus.disabled = true;
+                            btnMinus.style.opacity = '0.5';
+                            btnMinus.style.cursor = 'not-allowed';
+                        } else {
+                            btnMinus.onclick = () => updateCount(item.id, -1);
+                        }
+
+                        const countBadge = document.createElement('span');
+                        countBadge.className = 'count-badge';
+                        countBadge.textContent = item.count;
+
+                        const btnPlus = document.createElement('button');
+                        btnPlus.className = 'btn-circle btn-plus';
+                        btnPlus.dataset.tooltip = 'Збільшити кількість';
+                        btnPlus.textContent = '+';
+                        btnPlus.onclick = () => updateCount(item.id, 1);
+
+                        controls.append(btnMinus, countBadge, btnPlus);
+                    } else {
+                        const countBadge = document.createElement('span');
+                        countBadge.className = 'count-badge';
+                        countBadge.textContent = item.count;
+                        controls.appendChild(countBadge);
+                    }
+
+                    const btnStatus = document.createElement('button');
+                    btnStatus.className = 'btn-status';
+                    btnStatus.dataset.tooltip = item.isBought ? 'Скасувати купівлю' : 'Позначити як куплене';
+                    btnStatus.textContent = item.isBought ? 'Куплено' : 'Не куплено';
+                    btnStatus.onclick = () => toggleStatus(item.id);
+                    controls.appendChild(btnStatus);
+
+                    if (!item.isBought) {
+                        const btnDel = document.createElement('button');
+                        btnDel.className = 'btn-delete';
+                        btnDel.dataset.tooltip = 'Видалити товар';
+                        btnDel.textContent = '✖';
+                        btnDel.onclick = () => removeItem(item.id);
+                        controls.appendChild(btnDel);
+                    }
+
+                    row.append(nameSpan, controls);
+                    mainPanel.appendChild(row);
+                });
+            }
+
+            function renderSidePanel() {
+                const sidePanel = document.querySelector('.side-panel');
+                sidePanel.innerHTML = '';
+
+                const leftItems = items.filter(i => !i.isBought);
+                const boughtItems = items.filter(i => i.isBought);
+
+                const h2Left = document.createElement('h2');
+                h2Left.textContent = 'Залишилося';
+                sidePanel.appendChild(h2Left);
+
+                const leftContainer = document.createElement('div');
+                leftContainer.className = 'border-bot';
+
+                leftItems.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'side-item';
+                    div.innerHTML = `<span class="count-badge">${item.name} <span class="orange-circle">${item.count}</span></span>`;
+                    leftContainer.appendChild(div);
+                });
+                sidePanel.appendChild(leftContainer);
+
+                const h2Bought = document.createElement('h2');
+                h2Bought.textContent = 'Куплено';
+                h2Bought.style.marginTop = '20px';
+                sidePanel.appendChild(h2Bought);
+
+                boughtItems.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'side-item';
+                    div.innerHTML = `<span class="count-badge strike-text">${item.name} <span class="orange-circle">${item.count}</span></span>`;
+                    sidePanel.appendChild(div);
+                });
+            }
+
+            function editItemName(id, spanElement) {
+                const item = items.find(i => i.id === id);
+                
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.value = item.name;
+                input.style.flex = '1';
+                input.style.padding = '5px';
+                input.style.marginRight = '10px';
+                input.style.border = '1px solid var(--border-color, #e0e0e0)';
+                input.style.borderRadius = '5px';
+                input.style.fontFamily = 'inherit';
+                input.style.fontSize = '16px';
+
+                const saveNewName = () => {
+                    const newName = input.value.trim();
+                    if (newName) {
+                        item.name = newName;
+                        saveAndRender();
+                    } else {
+                        render();
+                    }
+                };
+
+                input.addEventListener('blur', saveNewName);
+                input.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') input.blur();
+                });
+
+                spanElement.replaceWith(input);
+                input.focus();
+            }
+
+            function removeItem(id) {
+                items = items.filter(item => item.id !== id);
+                saveAndRender();
+            }
+
+            function toggleStatus(id) {
+                const item = items.find(i => i.id === id);
+                if (item) {
+                    item.isBought = !item.isBought;
+                    saveAndRender();
+                }
+            }
+
+            function updateCount(id, delta) {
+                const item = items.find(i => i.id === id);
+                if (item && !item.isBought) {
+                    const newCount = item.count + delta;
+                    if (newCount >= 1) {
+                        item.count = newCount;
+                        saveAndRender();
+                    }
+                }
+            }
+
+            init();
+        });
+    </script>
 </body>
 </html>
